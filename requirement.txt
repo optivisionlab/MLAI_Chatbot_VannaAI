@@ -1,0 +1,2 @@
+vanna[fastapi,gemini,postgres]
+chromadb

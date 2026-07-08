@@ -1,5 +1,5 @@
 # CẤU HÌNH LLM
-export LLM_MODEL="gemini-2.5-pro"
+export LLM_MODEL="gemini-2.5-flash"
 export LLM_KEY="........."
 
 # CẤU HÌNH DATABASE

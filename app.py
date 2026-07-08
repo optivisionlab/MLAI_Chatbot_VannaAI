@@ -8,17 +8,28 @@ from vanna.servers.fastapi import VannaFastAPIServer
 from vanna.integrations.google import GeminiLlmService
 from vanna.integrations.postgres import PostgresRunner
 from vanna.integrations.chromadb import ChromaAgentMemory
+import os
+
+#get env
+DB_USER = os.getenv("DB_USER", default='')
+DB_PASSWORD = os.getenv("DB_PASSWORD", default='')
+DB_DOMAIN = os.getenv("DB_DOMAIN", default='localhost')
+DB_PORT = os.getenv("DB_PORT", default='5432')
+DB_NAME = os.getenv("DB_NAME", default='postgres')
+
+LLM_MODEL = os.getenv("LLM_MODEL", default='gemini-2.5-flash')
+LLM_KEY = os.getenv("LLM_KEY", default='')
 
 # Configure your LLM
 llm = GeminiLlmService(
-    model="gemini-2.5-pro",
-    api_key="..."  # Or use os.getenv("GOOGLE_API_KEY")
+    model=LLM_MODEL,
+    api_key=LLM_KEY  # Or use os.getenv("GOOGLE_API_KEY")
 )
 
 # Configure your database
 db_tool = RunSqlTool(
     sql_runner=PostgresRunner(
-        connection_string="postgresql://user:password@localhost:5432/dbname"
+        connection_string=f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_DOMAIN}:{DB_PORT}/{DB_NAME}"
     )
 )
 

@@ -1,2 +1,2 @@
-vanna[fastapi,gemini,postgres]
+vanna[openai,fastapi,gemini,postgres]
 chromadb

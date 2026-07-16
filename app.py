@@ -9,6 +9,24 @@ from vanna.integrations.google import GeminiLlmService
 from vanna.integrations.postgres import PostgresRunner
 from vanna.integrations.chromadb import ChromaAgentMemory
 import os
+from vanna.integrations.openai import OpenAILlmService
+
+
+def get_llm_config(LLM_MODEL, LLM_KEY):
+    # Configure your LLM
+    llm = None
+    if LLM_MODEL.startswith("gemini"):
+        llm = GeminiLlmService(
+            model=LLM_MODEL,
+            api_key=LLM_KEY  # Or use os.getenv("GOOGLE_API_KEY")
+        )
+    elif LLM_MODEL.startswith("gpt"):
+        llm = OpenAILlmService(
+            model=LLM_MODEL,
+            api_key=LLM_KEY  # Or use os.getenv("OPENAI_API_KEY")
+        )
+    return llm
+
 
 #get env
 DB_USER = os.getenv("DB_USER", default='')
@@ -20,11 +38,8 @@ DB_NAME = os.getenv("DB_NAME", default='postgres')
 LLM_MODEL = os.getenv("LLM_MODEL", default='gemini-2.5-flash')
 LLM_KEY = os.getenv("LLM_KEY", default='')
 
-# Configure your LLM
-llm = GeminiLlmService(
-    model=LLM_MODEL,
-    api_key=LLM_KEY  # Or use os.getenv("GOOGLE_API_KEY")
-)
+
+llm = get_llm_config(LLM_MODEL, LLM_KEY)
 
 # Configure your database
 db_tool = RunSqlTool(

@@ -5,7 +5,6 @@ from vanna.core.user import UserResolver, User, RequestContext
 from vanna.tools import RunSqlTool, VisualizeDataTool
 from vanna.tools.agent_memory import SaveQuestionToolArgsTool, SearchSavedCorrectToolUsesTool, SaveTextMemoryTool
 from vanna.servers.fastapi import VannaFastAPIServer
-from vanna.integrations.google import GeminiLlmService
 from vanna.integrations.postgres import PostgresRunner
 from vanna.integrations.chromadb import ChromaAgentMemory
 import os
@@ -17,14 +16,34 @@ DB_DOMAIN = os.getenv("DB_DOMAIN", default='localhost')
 DB_PORT = os.getenv("DB_PORT", default='5432')
 DB_NAME = os.getenv("DB_NAME", default='postgres')
 
-LLM_MODEL = os.getenv("LLM_MODEL", default='gemini-2.5-flash')
+# LLM_PROVIDER: "gemini" (default) | "openrouter" | "openai"
+LLM_PROVIDER = os.getenv("LLM_PROVIDER", default='gemini').lower()
+LLM_MODEL = os.getenv("LLM_MODEL", default='')
 LLM_KEY = os.getenv("LLM_KEY", default='')
+LLM_BASE_URL = os.getenv("LLM_BASE_URL", default='')
+
+OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
+
+
+def build_llm():
+    if LLM_PROVIDER == "gemini":
+        from vanna.integrations.google import GeminiLlmService
+        return GeminiLlmService(model=LLM_MODEL or 'gemini-2.5-flash', api_key=LLM_KEY)
+    if LLM_PROVIDER in ("openrouter", "openai"):
+        from vanna.integrations.openai import OpenAILlmService
+        if LLM_PROVIDER == "openrouter":
+            return OpenAILlmService(
+                model=LLM_MODEL or 'google/gemini-2.5-flash',
+                api_key=LLM_KEY,
+                base_url=LLM_BASE_URL or OPENROUTER_BASE_URL,
+            )
+        kwargs = {"base_url": LLM_BASE_URL} if LLM_BASE_URL else {}
+        return OpenAILlmService(model=LLM_MODEL or 'gpt-4o-mini', api_key=LLM_KEY, **kwargs)
+    raise ValueError(f"Unsupported LLM_PROVIDER: {LLM_PROVIDER}")
+
 
 # Configure your LLM
-llm = GeminiLlmService(
-    model=LLM_MODEL,
-    api_key=LLM_KEY  # Or use os.getenv("GOOGLE_API_KEY")
-)
+llm = build_llm()
 
 # Configure your database
 db_tool = RunSqlTool(
